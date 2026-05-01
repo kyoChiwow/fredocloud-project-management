@@ -28,6 +28,7 @@ model User {
   announcements Announcement[]
   reactions     Reaction[]
   comments      Comment[]
+  actionItems ActionItem[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -43,6 +44,7 @@ model Workspace {
   goals       Goal[]
 
   announcements Announcement[]
+  actionItems ActionItem[]
 
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
@@ -81,6 +83,7 @@ model Goal {
 
   owner       User      @relation("GoalOwner", fields: [ownerId], references: [id])
   workspace   Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  actionItems ActionItem[]
 
   milestones  Milestone[]
   activities  GoalActivity[]
@@ -171,4 +174,39 @@ model Comment {
   user            User         @relation(fields: [userId], references: [id])
 
   createdAt       DateTime @default(now())
+}
+
+enum ActionStatus {
+  TODO
+  IN_PROGRESS
+  DONE
+}
+
+enum ActionPriority {
+  LOW
+  MEDIUM
+  HIGH
+}
+
+model ActionItem {
+  id          String   @id @default(uuid())
+
+  title       String
+  description String?
+
+  status      ActionStatus   @default(TODO)
+  priority    ActionPriority @default(MEDIUM)
+
+  dueDate     DateTime?
+
+  goalId      String?
+  workspaceId String
+  assigneeId  String
+
+  goal        Goal?     @relation(fields: [goalId], references: [id], onDelete: Cascade)
+  workspace   Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  assignee    User      @relation(fields: [assigneeId], references: [id])
+
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
 }
