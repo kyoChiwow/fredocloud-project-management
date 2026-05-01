@@ -7,15 +7,25 @@ datasource db {
   provider = "postgresql"
 }
 
+enum SystemRole {
+  super_admin
+  user
+}
+
 model User {
   id            String    @id @default(uuid())
   email         String    @unique
   password      String
-  name          String?
+  name          String
   avatarUrl     String?
+  role          SystemRole @default(user)
+  isDeleted     Boolean    @default(false)
+  
   workspaces    WorkspaceMember[]
   goals         Goal[]    @relation("GoalOwner")
+  
   createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
 }
 
 model Workspace {

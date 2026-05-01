@@ -4,6 +4,7 @@ import cookieParser from "cookie-parser";
 import { envVars } from "./app/config/env";
 import { Request } from "express";
 import { Response } from "express";
+import { router } from "./app/routes";
 
 const app = express();
 
@@ -14,6 +15,8 @@ app.use(cors({
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
+
+app.use("/api/v1", router);
 
 app.get("/", (req: Request, res: Response) => {
     res.status(200).json({
