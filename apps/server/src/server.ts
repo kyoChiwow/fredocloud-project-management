@@ -1,22 +1,52 @@
-import { Server } from "http";
+import { createServer, Server as HTTPServer } from "http";
+import { Server as SocketIOServer } from "socket.io";
 import app from "./app";
 import { envVars } from "./app/config/env";
 
-let server: Server;
+let server: HTTPServer;
+let io: SocketIOServer;
 
 const startServer = async () => {
-    try {
-        server = app.listen(envVars.PORT, () => {
-            console.log(`Server running on port ${envVars.PORT}`)
-        })
-    } catch (error) {
-        console.log(error)
-    }
-}
+  try {
+    // Step 1: Create HTTP Server using the express app
+    server = createServer(app);
+
+    // Step 2: Initialize Socket.io
+    io = new SocketIOServer(server, {
+      cors: {
+        origin: envVars.FRONTEND_URL,
+        credentials: true,
+      },
+    });
+
+    // Step 3: Basic Socket Connection Logic
+    io.on("connection", (socket) => {
+      console.log("User Connected", socket.id);
+
+      socket.on("error", (err) => {
+        console.log(`Socket Error from ${socket.id}: ${err.message}`);
+      });
+
+      socket.on("disconnect", () => {
+        console.log("User Disconnected");
+      });
+    });
+
+    // Step 4: Start the HTTP server
+    server.listen(envVars.PORT, () => {
+      console.log(`Server running on port ${envVars.PORT}`);
+    });
+  } catch (error) {
+    console.log(error);
+  }
+};
 
 (async () => {
-    await startServer();
+  await startServer();
 })();
+
+// Export the IO
+export { io };
 
 // Unhandled rejection error
 process.on("unhandledRejection", (err) => {
