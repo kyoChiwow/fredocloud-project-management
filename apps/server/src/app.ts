@@ -5,6 +5,8 @@ import { envVars } from "./app/config/env";
 import { Request } from "express";
 import { Response } from "express";
 import { router } from "./app/routes";
+import { globalErrorHandler } from "./app/middlewares/globalErrorhandlers";
+import notFound from "./app/middlewares/notFound";
 
 const app = express();
 
@@ -23,5 +25,8 @@ app.get("/", (req: Request, res: Response) => {
         message: "Welcome to FredoCloud Project Management System!",
     })
 })
+
+app.use(globalErrorHandler);
+app.use(notFound);
 
 export default app;

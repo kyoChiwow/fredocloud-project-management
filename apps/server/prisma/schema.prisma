@@ -13,54 +13,162 @@ enum SystemRole {
 }
 
 model User {
-  id            String    @id @default(uuid())
-  email         String    @unique
-  password      String
-  name          String
-  avatarUrl     String?
-  role          SystemRole @default(user)
-  isDeleted     Boolean    @default(false)
-  
-  workspaces    WorkspaceMember[]
-  goals         Goal[]    @relation("GoalOwner")
-  
-  createdAt     DateTime  @default(now())
-  updatedAt     DateTime  @updatedAt
+  id        String   @id @default(uuid())
+  email     String   @unique
+  password  String
+  name      String
+  avatarUrl String?
+  role      SystemRole @default(user)
+  isDeleted Boolean  @default(false)
+
+  workspaces WorkspaceMember[]
+  goals      Goal[] @relation("GoalOwner")
+  activities GoalActivity[]
+
+  announcements Announcement[]
+  reactions     Reaction[]
+  comments      Comment[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }
 
 model Workspace {
-  id          String    @id @default(uuid())
+  id          String   @id @default(uuid())
   name        String
   description String?
-  accentColor String    @default("#4F46E5")
+  accentColor String   @default("#3B82F6")
+
   members     WorkspaceMember[]
   goals       Goal[]
-  createdAt   DateTime  @default(now())
+
+  announcements Announcement[]
+
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
 }
 
 model WorkspaceMember {
-  id          String    @id @default(uuid())
-  role        Role      @default(MEMBER)
+  id          String @id @default(uuid())
+
   userId      String
   workspaceId String
-  user        User      @relation(fields: [userId], references: [id])
-  workspace   Workspace @relation(fields: [workspaceId], references: [id])
+
+  role        WorkspaceRole @default(MEMBER)
+
+  user        User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  workspace   Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+
+  createdAt   DateTime @default(now())
 
   @@unique([userId, workspaceId])
 }
 
-enum Role {
+enum WorkspaceRole {
   ADMIN
   MEMBER
 }
 
+
 model Goal {
-  id          String    @id @default(uuid())
+  id          String   @id @default(uuid())
   title       String
-  status      String    @default("TODO") // TODO, IN_PROGRESS, COMPLETED
-  dueDate     DateTime?
+  description String?
+  status      GoalStatus @default(PENDING)
+
   ownerId     String
   workspaceId String
+
   owner       User      @relation("GoalOwner", fields: [ownerId], references: [id])
-  workspace   Workspace @relation(fields: [workspaceId], references: [id])
+  workspace   Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+
+  milestones  Milestone[]
+  activities  GoalActivity[]
+
+  dueDate     DateTime?
+
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+enum GoalStatus {
+  PENDING
+  IN_PROGRESS
+  COMPLETED
+}
+
+model Milestone {
+  id        String @id @default(uuid())
+  title     String
+  progress  Int @default(0)
+
+  goalId    String
+  goal      Goal @relation(fields: [goalId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+}
+
+model GoalActivity {
+  id        String @id @default(uuid())
+
+  message   String
+  type      String
+
+  goalId    String
+  userId    String
+
+  goal      Goal @relation(fields: [goalId], references: [id], onDelete: Cascade)
+  user      User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+}
+
+model Announcement {
+  id          String   @id @default(uuid())
+
+  title       String
+  content     String
+  isPinned    Boolean  @default(false)
+
+  workspaceId String
+  authorId    String
+
+  workspace   Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  author      User      @relation(fields: [authorId], references: [id])
+
+  reactions   Reaction[]
+  comments    Comment[]
+
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model Reaction {
+  id              String @id @default(uuid())
+
+  emoji           String
+
+  announcementId  String
+  userId          String
+
+  announcement    Announcement @relation(fields: [announcementId], references: [id], onDelete: Cascade)
+  user            User         @relation(fields: [userId], references: [id])
+
+  createdAt       DateTime @default(now())
+
+  @@unique([announcementId, userId])
+}
+
+model Comment {
+  id              String @id @default(uuid())
+
+  content         String
+
+  announcementId  String
+  userId          String
+
+  announcement    Announcement @relation(fields: [announcementId], references: [id], onDelete: Cascade)
+  user            User         @relation(fields: [userId], references: [id])
+
+  createdAt       DateTime @default(now())
 }

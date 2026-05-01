@@ -26,7 +26,7 @@ const loginUser = async (payload: any) => {
   const jwtPayload = { id: user.id, email: user.email, role: user.role };
   
   const accessToken = jwt.sign(jwtPayload, envVars.JWT_ACCESS_SECRET as string, {
-    expiresIn: "15m",
+    expiresIn: "7d",
   });
 
   const refreshToken = jwt.sign(jwtPayload, envVars.JWT_REFRESH_SECRET as string, {
