@@ -24,6 +24,7 @@ model User {
   workspaces WorkspaceMember[]
   goals      Goal[] @relation("GoalOwner")
   activities GoalActivity[]
+  notifications Notification[]
 
   announcements Announcement[]
   reactions     Reaction[]
@@ -45,6 +46,8 @@ model Workspace {
 
   announcements Announcement[]
   actionItems ActionItem[]
+  invites WorkspaceInvite[]
+  notifications Notification[]
 
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
@@ -69,6 +72,43 @@ model WorkspaceMember {
 enum WorkspaceRole {
   ADMIN
   MEMBER
+}
+
+model WorkspaceInvite {
+  id          String   @id @default(uuid())
+
+  email       String
+  workspaceId String
+  role        WorkspaceRole @default(MEMBER)
+
+  invitedById String
+
+  status      InviteStatus @default(PENDING)
+
+  workspace   Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+
+  createdAt   DateTime @default(now())
+}
+
+enum InviteStatus {
+  PENDING
+  ACCEPTED
+  REJECTED
+}
+
+model Notification {
+  id          String   @id @default(uuid())
+
+  userId      String
+  workspaceId String
+
+  message     String
+  isRead      Boolean @default(false)
+
+  createdAt   DateTime @default(now())
+
+  user        User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  workspace   Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
 }
 
 

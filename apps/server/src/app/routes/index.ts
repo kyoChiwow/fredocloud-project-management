@@ -5,6 +5,9 @@ import { WorkspaceRoutes } from "../modules/workspace/workspace.router";
 import { GoalRoutes } from "../modules/goal/goal.router";
 import { AnnouncementRoutes } from "../modules/announcement/announcement.route";
 import { ActionItemRoutes } from "../modules/actionItem/actionItem.routes";
+import { InviteRoutes } from "../modules/invite/invite.route";
+import { NotificationRoutes } from "../modules/notifications/notifications.route";
+import { AnalyticsRoutes } from "../modules/analytics/analytics.router";
 
 export const router = Router();
 
@@ -32,6 +35,18 @@ const moduleRoutes = [
     {
         path: "/action",
         route: ActionItemRoutes,
+    },
+    {
+        path: "/invite",
+        route: InviteRoutes,
+    },
+    {
+        path: "/notifications",
+        route: NotificationRoutes,
+    },
+    {
+        path: "/analytics",
+        route: AnalyticsRoutes,
     }
 ]
 

@@ -39,7 +39,7 @@ const updateStatusService = async (id: string, data: IUpdateStatus) => {
     data: { status: data.status },
   });
 
-  getIO().to(item.workspaceId).emit("action-updated", item);
+  getIO().to(`workspace:${item.workspaceId}`).emit("action-updated", item);
 };
 
 const assignUserService = async (id: string, assigneeId: string) => {

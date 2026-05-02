@@ -4,20 +4,30 @@ import { Server, Socket } from "socket.io";
 const onlineUsers = new Map<string, string>(); // socketId -> userId
 
 export const registerWorkspaceSocket = (io: Server, socket: Socket) => {
+  // ✅ USER CONNECTED (join personal room)
+  socket.on("join-user", ({ userId }) => {
+    socket.join(`user:${userId}`);
+    onlineUsers.set(socket.id, userId);
+
+    console.log(`User ${userId} joined personal room`);
+  });
+
+  // ✅ JOIN WORKSPACE
   socket.on("join-workspace", ({ workspaceId, userId }) => {
-    socket.join(workspaceId);
+    socket.join(`workspace:${workspaceId}`);
 
     onlineUsers.set(socket.id, userId);
 
     const users = Array.from(onlineUsers.values());
 
-    io.to(workspaceId).emit("online-users", users);
+    io.to(`workspace:${workspaceId}`).emit("online-users", users);
   });
 
+  // ❌ DISCONNECT
   socket.on("disconnect", () => {
     const userId = onlineUsers.get(socket.id);
     onlineUsers.delete(socket.id);
 
-    // You can optionally broadcast update here
+    console.log(`User disconnected: ${userId}`);
   });
 };

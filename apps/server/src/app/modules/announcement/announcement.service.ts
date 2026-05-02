@@ -1,5 +1,6 @@
 import { prisma } from "../../../../lib/prisma";
 import { getIO } from "../../../sockets";
+import { NotificationService } from "../notifications/notifications.service";
 import {
   ICommentAnnouncement,
   ICreateAnnouncement,
@@ -21,7 +22,7 @@ const createAnnouncementService = async (
     },
   });
 
-  getIO().to(data.workspaceId).emit("announcement-created", announcement);
+  getIO().to(`workspace:${data.workspaceId}`).emit("announcement-created", announcement);
   return announcement;
 };
 
@@ -84,15 +85,13 @@ const reactToAnnouncementService = async (
     throw new Error("Announcement not found");
   }
 
-  getIO()
-    .to(announcement.workspaceId)
-    .emit("reaction-created", reaction);
+  getIO().to(`workspace:${announcement.workspaceId}`).emit("reaction-created", reaction);
 
   return reaction;
 };
 
 const addCommentService = async (
-  data: ICommentAnnouncement & { userId: string },
+  data: ICommentAnnouncement & { userId: string }
 ) => {
   const comment = await prisma.comment.create({
     data: {
@@ -105,18 +104,42 @@ const addCommentService = async (
     },
   });
 
+  // 🔥 Get workspaceId safely
   const announcement = await prisma.announcement.findUnique({
     where: { id: data.announcementId },
     select: { workspaceId: true },
   });
 
-  if (!announcement) {
-    throw new Error("Announcement not found");
+  if (!announcement) throw new Error("Announcement not found");
+
+  // 🔥 Extract mentions (@username)
+  const mentions = data.content.match(/@(\w+)/g);
+
+  if (mentions && mentions.length > 0) {
+    const usernames = mentions.map((m) => m.replace("@", ""));
+
+    const users = await prisma.user.findMany({
+      where: {
+        name: {
+          in: usernames,
+        },
+      },
+    });
+
+    // 🔥 Create notifications for each mentioned user
+    await Promise.all(
+      users.map((user) =>
+        NotificationService.createNotificationService({
+          userId: user.id,
+          workspaceId: announcement.workspaceId,
+          message: `You were mentioned in a comment`,
+        })
+      )
+    );
   }
 
-  getIO()
-    .to(announcement.workspaceId)
-    .emit("comment-created", comment);
+  // 🔥 Real-time comment emit
+  getIO().to(`workspace:${announcement.workspaceId}`).emit("comment-created", comment);
 
   return comment;
 };
