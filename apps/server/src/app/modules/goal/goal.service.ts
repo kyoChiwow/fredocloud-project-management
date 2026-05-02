@@ -1,5 +1,6 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 import { prisma } from "../../../../lib/prisma";
+import { GoalStatus } from "../../../prisma/enums";
+import { getIO } from "../../../sockets";
 import { ICreateGoal, ICreateMilestone } from "./goal.interface";
 
 const createGoalService = async (data: ICreateGoal) => {
@@ -72,7 +73,7 @@ const addMilestoneService = async (data: ICreateMilestone & { userId: string }) 
 
 const updateGoalStatusService = async (
   goalId: string,
-  status: any,
+  status: GoalStatus,
   userId: string
 ) => {
   const goal = await prisma.goal.update({
@@ -88,6 +89,8 @@ const updateGoalStatusService = async (
       message: `Status changed to ${status}`,
     },
   });
+
+  getIO().to(goal.workspaceId).emit("goal-updated", goal);
 
   return goal;
 };

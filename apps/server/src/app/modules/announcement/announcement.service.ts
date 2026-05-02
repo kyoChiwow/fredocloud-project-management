@@ -1,13 +1,13 @@
 import { prisma } from "../../../../lib/prisma";
 import { getIO } from "../../../sockets";
 import {
+  ICommentAnnouncement,
   ICreateAnnouncement,
   IReactAnnouncement,
-  ICommentAnnouncement,
 } from "./announcement.interface";
 
 const createAnnouncementService = async (
-  data: ICreateAnnouncement & { authorId: string }
+  data: ICreateAnnouncement & { authorId: string },
 ) => {
   const announcement = await prisma.announcement.create({
     data: {
@@ -38,10 +38,7 @@ const getAnnouncementsService = async (workspaceId: string) => {
         orderBy: { createdAt: "asc" },
       },
     },
-    orderBy: [
-      { isPinned: "desc" },
-      { createdAt: "desc" },
-    ],
+    orderBy: [{ isPinned: "desc" }, { createdAt: "desc" }],
   });
 };
 
@@ -59,9 +56,9 @@ const togglePinAnnouncementService = async (id: string) => {
 };
 
 const reactToAnnouncementService = async (
-  data: IReactAnnouncement & { userId: string }
+  data: IReactAnnouncement & { userId: string },
 ) => {
-  return prisma.reaction.upsert({
+  const reaction = await prisma.reaction.upsert({
     where: {
       announcementId_userId: {
         announcementId: data.announcementId,
@@ -77,12 +74,27 @@ const reactToAnnouncementService = async (
       emoji: data.emoji,
     },
   });
+
+  const announcement = await prisma.announcement.findUnique({
+    where: { id: data.announcementId },
+    select: { workspaceId: true },
+  });
+
+  if (!announcement) {
+    throw new Error("Announcement not found");
+  }
+
+  getIO()
+    .to(announcement.workspaceId)
+    .emit("reaction-created", reaction);
+
+  return reaction;
 };
 
 const addCommentService = async (
-  data: ICommentAnnouncement & { userId: string }
+  data: ICommentAnnouncement & { userId: string },
 ) => {
-  return prisma.comment.create({
+  const comment = await prisma.comment.create({
     data: {
       announcementId: data.announcementId,
       userId: data.userId,
@@ -92,6 +104,21 @@ const addCommentService = async (
       user: true,
     },
   });
+
+  const announcement = await prisma.announcement.findUnique({
+    where: { id: data.announcementId },
+    select: { workspaceId: true },
+  });
+
+  if (!announcement) {
+    throw new Error("Announcement not found");
+  }
+
+  getIO()
+    .to(announcement.workspaceId)
+    .emit("comment-created", comment);
+
+  return comment;
 };
 
 export const AnnouncementService = {

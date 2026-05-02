@@ -1,4 +1,5 @@
 import { prisma } from "../../../../lib/prisma";
+import { getIO } from "../../../sockets";
 import { ICreateActionItem, IUpdateStatus } from "./actionItem.interface";
 
 const createActionItemService = async (data: ICreateActionItem) => {
@@ -32,20 +33,16 @@ const getActionItemsByWorkspaceService = async (workspaceId: string) => {
   });
 };
 
-const updateStatusService = async (
-  id: string,
-  data: IUpdateStatus
-) => {
-  return prisma.actionItem.update({
+const updateStatusService = async (id: string, data: IUpdateStatus) => {
+  const item = await prisma.actionItem.update({
     where: { id },
     data: { status: data.status },
   });
+
+  getIO().to(item.workspaceId).emit("action-updated", item);
 };
 
-const assignUserService = async (
-  id: string,
-  assigneeId: string
-) => {
+const assignUserService = async (id: string, assigneeId: string) => {
   return prisma.actionItem.update({
     where: { id },
     data: { assigneeId },

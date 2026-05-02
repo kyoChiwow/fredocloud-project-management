@@ -1,3 +1,5 @@
+import { ActionStatus } from "../../../prisma/enums";
+
 export interface ICreateActionItem {
   title: string;
   description?: string;
@@ -9,5 +11,5 @@ export interface ICreateActionItem {
 }
 
 export interface IUpdateStatus {
-  status: "TODO" | "IN_PROGRESS" | "DONE";
+  status: ActionStatus;
 }
