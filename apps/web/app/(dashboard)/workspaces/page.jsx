@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import CreateWorkspaceModal from "@/components/createWorkspaceModal";
 import WorkspaceCard from "@/components/workspaceCard";
 import { useWorkspaceStore } from "@/app/store/workspace.store";
-import { Plus, LayoutGrid, Loader2 } from "lucide-react"; // npm install lucide-react
+import { Plus, LayoutGrid, Loader2 } from "lucide-react";
 
 export default function WorkspacesPage() {
   const { workspaces, fetchWorkspaces, isLoading } = useWorkspaceStore();

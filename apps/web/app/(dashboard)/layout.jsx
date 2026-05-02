@@ -4,6 +4,7 @@ import { useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { useSocketStore } from "../store/socket.store";
 import { useAuthStore } from "../store/auth.store";
+import Navbar from "@/components/navbar";
 
 
 export default function DashboardLayout({ children }) {
@@ -29,5 +30,5 @@ export default function DashboardLayout({ children }) {
 
   if (loading) return <p>Loading...</p>;
 
-  return <div>{children}</div>;
+  return <div> <Navbar></Navbar> {children}</div>;
 }

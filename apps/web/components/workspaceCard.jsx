@@ -10,7 +10,7 @@ export default function WorkspaceCard({ workspace }) {
 
   const handleEnter = () => {
     setCurrentWorkspace(workspace);
-    router.push(`/workspace/${workspace.id}`);
+    router.push(`/workspace/${workspace.id}/goals`);
   };
 
   return (
