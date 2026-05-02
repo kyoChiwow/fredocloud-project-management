@@ -1,4 +1,5 @@
 import { prisma } from "../../../../lib/prisma";
+import { getIO } from "../../../sockets";
 import {
   ICreateAnnouncement,
   IReactAnnouncement,
@@ -8,7 +9,7 @@ import {
 const createAnnouncementService = async (
   data: ICreateAnnouncement & { authorId: string }
 ) => {
-  return prisma.announcement.create({
+  const announcement = await prisma.announcement.create({
     data: {
       title: data.title,
       content: data.content,
@@ -19,6 +20,9 @@ const createAnnouncementService = async (
       author: true,
     },
   });
+
+  getIO().to(data.workspaceId).emit("announcement-created", announcement);
+  return announcement;
 };
 
 const getAnnouncementsService = async (workspaceId: string) => {
