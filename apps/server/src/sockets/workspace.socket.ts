@@ -16,6 +16,8 @@ export const registerWorkspaceSocket = (io: Server, socket: Socket) => {
   socket.on("join-workspace", ({ workspaceId, userId }) => {
     socket.join(`workspace:${workspaceId}`);
 
+    console.log("JOIN WORKSPACE:", workspaceId, userId);
+
     onlineUsers.set(socket.id, userId);
 
     const users = Array.from(onlineUsers.values());

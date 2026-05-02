@@ -27,6 +27,22 @@ const createUserService = async (userData: Partial<IUser>) => {
   return userWithoutPassword;
 };
 
+const getAllUsersService = async () => {
+  return await prisma.user.findMany({
+    where: { isDeleted: false },
+    select: { 
+      id: true, 
+      name: true, 
+      email: true, 
+      role: true, 
+      avatarUrl: true,
+      createdAt: true 
+    },
+    orderBy: { name: 'asc' }
+  });
+};
+
 export const UserServices = {
   createUserService,
+  getAllUsersService
 };

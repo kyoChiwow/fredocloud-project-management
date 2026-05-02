@@ -28,6 +28,18 @@ const registerUser = catchAsync(async (req: Request, res: Response) => {
   }
 });
 
+const getAllUsers = catchAsync(async (req: Request, res: Response) => {
+  const result = await UserServices.getAllUsersService();
+
+  res.status(200).json({
+    success: true,
+    message: "Users retrieved successfully!",
+    data: result,
+  });
+});
+
+
 export const UserController = {
   registerUser,
+  getAllUsers
 };

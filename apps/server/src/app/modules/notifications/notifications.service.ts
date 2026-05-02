@@ -13,7 +13,7 @@ const createNotificationService = async (data: ICreateNotification) => {
   });
 
   // 🔥 Real-time push to user
-  getIO().to(data.userId).emit("notification", notification);
+  getIO().to(`user:${data.userId}`).emit("notification", notification);
 
   return notification;
 };

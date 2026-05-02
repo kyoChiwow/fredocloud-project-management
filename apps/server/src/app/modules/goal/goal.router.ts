@@ -5,7 +5,7 @@ import { checkPermission } from "../../middlewares/checkPermissions";
 
 const router = Router();
 
-router.post("/", checkAuth(), checkPermission("CREATE_GOAL"), GoalController.createGoal);
+router.post("/", checkAuth(), GoalController.createGoal);
 router.post("/milestone", checkAuth(), GoalController.addMilestone);
 
 router.get(

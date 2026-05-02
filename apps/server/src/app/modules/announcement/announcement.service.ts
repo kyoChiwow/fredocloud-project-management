@@ -48,12 +48,23 @@ const togglePinAnnouncementService = async (id: string) => {
     where: { id },
   });
 
-  return prisma.announcement.update({
+  if (!existing) throw new Error("Announcement not found");
+
+  const updated = await prisma.announcement.update({
     where: { id },
     data: {
-      isPinned: !existing?.isPinned,
+      isPinned: !existing.isPinned,
     },
+    include: {
+      author: true,
+      reactions: true,
+      comments: { include: { user: true } }
+    }
   });
+
+  getIO().to(`workspace:${updated.workspaceId}`).emit("announcement-updated", updated);
+
+  return updated;
 };
 
 const reactToAnnouncementService = async (

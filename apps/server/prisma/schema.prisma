@@ -106,6 +106,8 @@ model Notification {
   isRead      Boolean @default(false)
 
   createdAt   DateTime @default(now())
+  type        String? 
+  meta        Json?
 
   user        User @relation(fields: [userId], references: [id], onDelete: Cascade)
   workspace   Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)

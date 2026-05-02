@@ -8,19 +8,18 @@ const createGoalService = async (data: ICreateGoal) => {
     data: {
       title: data.title,
       description: data.description,
-      dueDate: data.dueDate,
+      dueDate: data.dueDate ? new Date(data.dueDate) : null,
       workspaceId: data.workspaceId,
       ownerId: data.ownerId,
     },
     include: {
       owner: true,
-      workspace: true,
       milestones: true,
       activities: true,
     },
   });
 
-  await prisma.goalActivity.create({
+  const activity = await prisma.goalActivity.create({
     data: {
       goalId: goal.id,
       userId: data.ownerId,
@@ -28,6 +27,12 @@ const createGoalService = async (data: ICreateGoal) => {
       message: `Goal "${goal.title}" created`,
     },
   });
+
+  // 🔥 REALTIME
+  const io = getIO();
+
+  io.to(`workspace:${goal.workspaceId}`).emit("goal-created", goal);
+  io.to(`workspace:${goal.workspaceId}`).emit("activity-added", activity);
 
   return goal;
 };
@@ -50,7 +55,9 @@ const getGoalsByWorkspaceService = async (workspaceId: string) => {
   });
 };
 
-const addMilestoneService = async (data: ICreateMilestone & { userId: string }) => {
+const addMilestoneService = async (
+  data: ICreateMilestone & { userId: string }
+) => {
   const milestone = await prisma.milestone.create({
     data: {
       title: data.title,
@@ -59,7 +66,7 @@ const addMilestoneService = async (data: ICreateMilestone & { userId: string }) 
     },
   });
 
-  await prisma.goalActivity.create({
+  const activity = await prisma.goalActivity.create({
     data: {
       goalId: data.goalId,
       userId: data.userId,
@@ -67,6 +74,23 @@ const addMilestoneService = async (data: ICreateMilestone & { userId: string }) 
       message: `Milestone "${data.title}" added`,
     },
   });
+
+  // 🔥 NEED WORKSPACE ID
+  const goal = await prisma.goal.findUnique({
+    where: { id: data.goalId },
+    select: { workspaceId: true },
+  });
+
+  if (!goal) throw new Error("Goal not found");
+
+  const io = getIO();
+
+  io.to(`workspace:${goal.workspaceId}`).emit("milestone-added", {
+    goalId: data.goalId,
+    milestone,
+  });
+
+  io.to(`workspace:${goal.workspaceId}`).emit("activity-added", activity);
 
   return milestone;
 };
@@ -81,7 +105,7 @@ const updateGoalStatusService = async (
     data: { status },
   });
 
-  await prisma.goalActivity.create({
+  const activity = await prisma.goalActivity.create({
     data: {
       goalId,
       userId,
@@ -90,7 +114,10 @@ const updateGoalStatusService = async (
     },
   });
 
-  getIO().to(goal.workspaceId).emit("goal-updated", goal);
+  const io = getIO();
+
+  io.to(`workspace:${goal.workspaceId}`).emit("goal-updated", goal);
+  io.to(`workspace:${goal.workspaceId}`).emit("activity-added", activity);
 
   return goal;
 };

@@ -1,5 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { prisma } from "../../../../lib/prisma";
+import { NotificationService } from "../notifications/notifications.service";
 import {
   IInviteMember,
   IAcceptInvite,
@@ -17,6 +18,22 @@ const inviteMemberService = async (
       invitedById: data.invitedById,
     },
   });
+
+  const user = await prisma.user.findUnique({
+  where: { email: data.email },
+});
+
+if (user) {
+ await NotificationService.createNotificationService({
+  userId: user.id,
+  workspaceId: data.workspaceId,
+  message: `You were invited to ${data.workspaceId}`,
+  type: "INVITE",
+  meta: {
+    inviteId: invite.id,
+  },
+});
+}
 
   return invite;
 };
