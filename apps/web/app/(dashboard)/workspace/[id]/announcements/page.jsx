@@ -25,7 +25,7 @@ export default function AnnouncementsPage() {
   return (
     <div className="min-h-screen bg-[#f8fafc] pb-24 relative overflow-x-hidden">
       {/* Decorative Top Gradient */}
-      <div className="absolute top-0 left-0 right-0 h-64 bg-gradient-to-b from-blue-50/50 to-transparent pointer-events-none" />
+      <div className="absolute top-0 left-0 right-0 h-64 bg-linear-to-b from-blue-50/50 to-transparent pointer-events-none" />
 
       <div className="max-w-3xl mx-auto px-6 pt-12 relative z-10">
         
@@ -95,7 +95,7 @@ export default function AnnouncementsPage() {
             {others.length > 0 && (
               <div className="space-y-8 relative">
                 {/* THE LINE: Lower Z-index to stay BEHIND cards */}
-                <div className="absolute left-[27px] top-10 bottom-0 w-0.5 bg-slate-200/60 hidden sm:block z-0" />
+                <div className="absolute left-6.75 top-10 bottom-0 w-0.5 bg-slate-200/60 hidden sm:block z-0" />
 
                 <div className="flex items-center gap-2 px-2 relative z-10">
                   {/* THE DOT: Sits ON the line */}
@@ -126,7 +126,7 @@ export default function AnnouncementsPage() {
                   <Megaphone className="h-10 w-10 text-slate-200" />
                 </div>
                 <h3 className="text-xl font-bold text-slate-900">Quiet in here...</h3>
-                <p className="text-slate-400 mt-2 max-w-xs mx-auto">This workspace hasn't shared any news. Start the conversation!</p>
+                <p className="text-slate-400 mt-2 max-w-xs mx-auto">This workspace hasnt shared any news. Start the conversation!</p>
               </div>
             )}
           </div>

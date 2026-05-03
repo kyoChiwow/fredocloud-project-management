@@ -1,13 +1,7 @@
-import GoalChart from "@/components/analytics/goalChart";
-import StatsCards from "@/components/analytics/statsCards";
+"use client"
 
 export default function AnalyticsPage() {
-  const { stats, chart } = useQuery(["analytics"], fetchAnalytics);
-
-  return (
-    <div className="space-y-6">
-      <StatsCards stats={stats} />
-      <GoalChart data={chart} />
-    </div>
-  );
+    return (
+        <div>Need to develop</div>
+    )
 }
