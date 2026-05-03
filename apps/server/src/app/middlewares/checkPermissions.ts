@@ -50,6 +50,7 @@ export const checkPermission = (permission: string) => {
 
       next();
     } catch (error) {
+      console.log(error);
       return res.status(500).json({
         success: false,
         message: "Authorization failed",

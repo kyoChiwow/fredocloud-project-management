@@ -4,7 +4,6 @@ import { getIO } from "../../../sockets";
 import { NotificationService } from "../notifications/notifications.service";
 import {
   IInviteMember,
-  IAcceptInvite,
   IUpdateMemberRole,
 } from "./invite.interface";
 

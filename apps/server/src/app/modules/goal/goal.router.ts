@@ -1,7 +1,6 @@
 import { Router } from "express";
 import { GoalController } from "./goal.controller";
 import { checkAuth } from "../../middlewares/checkAuth";
-import { checkPermission } from "../../middlewares/checkPermissions";
 
 const router = Router();
 
