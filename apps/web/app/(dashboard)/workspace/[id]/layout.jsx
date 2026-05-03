@@ -11,6 +11,8 @@ import {
   Layers,
   LogOut
 } from "lucide-react";
+import { HammerIcon } from "lucide-react";
+import { ChartArea } from "lucide-react";
 
 export default function WorkspaceLayout({ children }) {
   const { id } = useParams();
@@ -37,6 +39,16 @@ export default function WorkspaceLayout({ children }) {
       name: "Announcements",
       path: `/workspace/${id}/announcements`,
       icon: <Megaphone className="h-4 w-4" />,
+    },
+    {
+      name: "Actions",
+      path: `/workspace/${id}/actions`,
+      icon: <HammerIcon className="h-4 w-4" />,
+    },
+    {
+      name: "Analytics",
+      path: `/workspace/${id}/analytics`,
+      icon: <ChartArea className="h-4 w-4" />,
     },
   ];
 

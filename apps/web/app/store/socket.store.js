@@ -2,6 +2,8 @@ import { create } from "zustand";
 import { io } from "socket.io-client";
 import { useGoalStore } from "./goal.store";
 import { useAnnouncementStore } from "./announcement.store";
+import { useWorkspaceStore } from "./workspace.store";
+import { useNotificationStore } from "./notification.store";
 
 let socket;
 
@@ -22,6 +24,8 @@ export const useSocketStore = create((set) => ({
         socket.off("goal-updated");
         socket.off("activity-added");
         socket.off("announcement-created");
+        socket.off("workspace-joined");
+        socket.off("notification");
 
       // 🔥 REGISTER ALL REALTIME EVENTS
       registerGoalEvents(socket);
@@ -35,7 +39,29 @@ export const useSocketStore = create((set) => ({
         notifications: [notification, ...state.notifications],
       });
     });
-    
+
+    socket.on("workspace-joined", (data) => {
+  console.log("🎉 Joined new workspace:", data);
+
+  const state = useWorkspaceStore.getState();
+
+  const exists = state.workspaces.some(
+    (w) => w.id === data.workspace.id
+  );
+
+  if (!exists) {
+    useWorkspaceStore.setState({
+      workspaces: [
+        ...state.workspaces,
+        {
+          ...data.workspace,
+          role: data.role,
+        },
+      ],
+    });
+  }
+});
+
       console.log("🚀 All socket events registered");
     }
   },
@@ -51,8 +77,9 @@ export const useSocketStore = create((set) => ({
 },
 
   joinUser: (userId) => {
-    socket.emit("join-user", { userId });
-  },
+  if (!socket) return;
+  socket.emit("join-user", { userId });
+},
 }));
 
 // 🔥 EVENT HANDLER FUNCTION

@@ -3,9 +3,10 @@
 import { useEffect, useState } from "react";
 import { useParams } from "next/navigation";
 import CreateGoalModal from "@/components/goalComponents/createGoalModal";
+import InviteModal from "@/components/invite/inviteModal"; 
 import GoalCard from "@/components/goalComponents/goalCard";
 import { useGoalStore } from "@/app/store/goal.store";
-import { Plus, Target, Layout } from "lucide-react"; // npm install lucide-react
+import { Plus, Target, Layout, UserPlus } from "lucide-react"; 
 import { useSocketStore } from "@/app/store/socket.store";
 import { useAuthStore } from "@/app/store/auth.store";
 
@@ -14,17 +15,15 @@ export default function WorkspacePage() {
   const { goals, fetchGoals, isLoading } = useGoalStore();
   const { connect, joinWorkspace } = useSocketStore();
   const { user } = useAuthStore();
-  const [open, setOpen] = useState(false);
+  
+  // 1. Separate states for each modal
+  const [openGoalModal, setOpenGoalModal] = useState(false);
+  const [openInviteModal, setOpenInviteModal] = useState(false);
 
   useEffect(() => {
     if (id) {
-      // 1. Fetch the data
       fetchGoals(id);
-      
-      // 2. Connect and Join Socket Room
       connect();
-      
-      // We pass BOTH id (workspace) and user.id to match your backend destructuring
       if (user?.id) {
         joinWorkspace(id, user.id);
       }
@@ -47,13 +46,24 @@ export default function WorkspacePage() {
             </div>
           </div>
 
-          <button
-            onClick={() => setOpen(true)}
-            className="group flex items-center justify-center gap-2 rounded-xl bg-slate-900 px-5 py-2.5 text-sm font-bold text-white transition-all hover:bg-slate-800 active:scale-95 shadow-lg shadow-slate-200"
-          >
-            <Plus className="h-4 w-4 transition-transform group-hover:rotate-90" />
-            New Goal
-          </button>
+          <div className="flex items-center gap-3">
+            {/* 2. New Invite Member Button */}
+            <button
+              onClick={() => setOpenInviteModal(true)}
+              className="flex items-center justify-center gap-2 rounded-xl bg-white border border-slate-200 px-5 py-2.5 text-sm font-bold text-slate-700 transition-all hover:bg-slate-50 active:scale-95 shadow-sm"
+            >
+              <UserPlus className="h-4 w-4 text-blue-600" />
+              Invite
+            </button>
+
+            <button
+              onClick={() => setOpenGoalModal(true)}
+              className="group flex items-center justify-center gap-2 rounded-xl bg-slate-900 px-5 py-2.5 text-sm font-bold text-white transition-all hover:bg-slate-800 active:scale-95 shadow-lg shadow-slate-200"
+            >
+              <Plus className="h-4 w-4 transition-transform group-hover:rotate-90" />
+              New Goal
+            </button>
+          </div>
         </div>
 
         {/* Goals List */}
@@ -69,7 +79,6 @@ export default function WorkspacePage() {
               <GoalCard key={goal.id} goal={goal} />
             ))
           ) : (
-            /* Empty State */
             <div className="flex flex-col items-center justify-center rounded-3xl border-2 border-dashed border-slate-200 bg-white p-16 text-center shadow-sm">
               <div className="flex h-16 w-16 items-center justify-center rounded-full bg-blue-50 text-blue-600 mb-4">
                 <Target className="h-8 w-8" />
@@ -79,7 +88,7 @@ export default function WorkspacePage() {
                 Break down your workspace vision into actionable goals to start tracking progress.
               </p>
               <button
-                onClick={() => setOpen(true)}
+                onClick={() => setOpenGoalModal(true)}
                 className="mt-6 text-sm font-bold text-blue-600 hover:underline"
               >
                 + Create your first goal
@@ -89,11 +98,18 @@ export default function WorkspacePage() {
         </div>
       </div>
 
-      {/* Modal Overlay */}
-      {open && (
+      {/* 3. Conditional Modals */}
+      {openGoalModal && (
         <CreateGoalModal
           workspaceId={id}
-          onClose={() => setOpen(false)}
+          onClose={() => setOpenGoalModal(false)}
+        />
+      )}
+
+      {openInviteModal && (
+        <InviteModal
+          workspaceId={id}
+          onClose={() => setOpenInviteModal(false)}
         />
       )}
     </div>
