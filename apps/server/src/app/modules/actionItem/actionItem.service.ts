@@ -1,4 +1,5 @@
 import { prisma } from "../../../../lib/prisma";
+import { ActionStatus } from "../../../prisma/enums";
 import { getIO } from "../../../sockets";
 import { ICreateActionItem, IUpdateStatus } from "./actionItem.interface";
 
@@ -49,9 +50,56 @@ const assignUserService = async (id: string, assigneeId: string) => {
   });
 };
 
+const moveActionItemService = async (
+  id: string,
+  data: { status: ActionStatus; position: number }
+) => {
+  const item = await prisma.actionItem.update({
+    where: { id },
+    data: {
+      status: data.status,
+      position: data.position,
+    },
+  });
+
+  getIO().to(`workspace:${item.workspaceId}`).emit("action-moved", item);
+
+  return item;
+};
+
+const getActionItemStatsService = async (workspaceId: string) => {
+  const total = await prisma.actionItem.count({ where: { workspaceId } });
+
+  const completed = await prisma.actionItem.count({
+    where: { workspaceId, status: "DONE" },
+  });
+
+  const overdue = await prisma.actionItem.count({
+    where: {
+      workspaceId,
+      dueDate: { lt: new Date() },
+      status: { not: "DONE" },
+    },
+  });
+
+  return { total, completed, overdue };
+};
+
+const getPriorityStatsService = async (workspaceId: string) => {
+  return prisma.actionItem.groupBy({
+    by: ["priority"],
+    where: { workspaceId },
+    _count: { priority: true },
+  });
+};
+
 export const ActionService = {
   createActionItemService,
   getActionItemsByWorkspaceService,
   updateStatusService,
   assignUserService,
+  moveActionItemService,
+  getActionItemStatsService,
+  getPriorityStatsService,
+  
 };

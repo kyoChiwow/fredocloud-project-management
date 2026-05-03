@@ -57,9 +57,54 @@ const assignUser = catchAsync(async (req: Request, res: Response) => {
   });
 });
 
+const moveActionItem = catchAsync(async (req: Request, res: Response) => {
+  const id = Array.isArray(req.params.id)
+    ? req.params.id[0]
+    : req.params.id;
+
+  const result = await ActionService.moveActionItemService(id, req.body);
+
+  res.status(200).json({
+    success: true,
+    message: "Action item moved successfully",
+    data: result,
+  });
+});
+
+const getActionItemStats = catchAsync(async (req: Request, res: Response) => {
+  const workspaceId = Array.isArray(req.params.workspaceId)
+    ? req.params.workspaceId[0]
+    : req.params.workspaceId;
+
+  const result = await ActionService.getActionItemStatsService(workspaceId);
+
+  res.status(200).json({
+    success: true,
+    message: "Action item statistics retrieved",
+    data: result,
+  });
+});
+
+const getPriorityStats = catchAsync(async (req: Request, res: Response) => {
+  const workspaceId = Array.isArray(req.params.workspaceId)
+    ? req.params.workspaceId[0]
+    : req.params.workspaceId;
+
+  const result = await ActionService.getPriorityStatsService(workspaceId);
+
+  res.status(200).json({
+    success: true,
+    message: "Priority statistics retrieved",
+    data: result,
+  });
+});
+
 export const ActionController = {
   createActionItem,
   getActionItems,
   updateStatus,
   assignUser,
+  moveActionItem,
+  getActionItemStats,
+  getPriorityStats
 };

@@ -1,5 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { prisma } from "../../../../lib/prisma";
+import { getIO } from "../../../sockets";
 import { NotificationService } from "../notifications/notifications.service";
 import {
   IInviteMember,
@@ -23,11 +24,15 @@ const inviteMemberService = async (
   where: { email: data.email },
 });
 
+const workspace = await prisma.workspace.findUnique({
+  where: { id: data.workspaceId },
+});
+
 if (user) {
  await NotificationService.createNotificationService({
   userId: user.id,
   workspaceId: data.workspaceId,
-  message: `You were invited to ${data.workspaceId}`,
+  message: `You were invited to ${workspace?.name}`,
   type: "INVITE",
   meta: {
     inviteId: invite.id,
@@ -38,31 +43,47 @@ if (user) {
   return invite;
 };
 
-const acceptInviteService = async (
-  data: IAcceptInvite & { userId: string }
-) => {
+const acceptInviteService = async (data: any) => {
   const invite = await prisma.workspaceInvite.findUnique({
     where: { id: data.inviteId },
   });
 
   if (!invite) throw new Error("Invite not found");
 
-  // Create membership
-  await prisma.workspaceMember.create({
+  // 1. Create membership
+  const membership = await prisma.workspaceMember.create({
     data: {
       userId: data.userId,
       workspaceId: invite.workspaceId,
       role: invite.role,
     },
+    include: {
+      workspace: true, // 🔥 IMPORTANT
+    },
   });
 
-  // Update invite status
+  // 2. Update invite
   await prisma.workspaceInvite.update({
     where: { id: invite.id },
     data: { status: "ACCEPTED" },
   });
 
-  return { message: "Joined workspace successfully" };
+  await NotificationService.createNotificationService({
+  userId: invite.invitedById,
+  workspaceId: invite.workspaceId,
+  message: `Invite accepted by user`,
+  type: "INFO",
+});
+
+  // 🔥 3. EMIT REALTIME EVENT TO USER
+  const io = getIO();
+
+  io.to(`user:${data.userId}`).emit("workspace-joined", {
+    workspace: membership.workspace,
+    role: membership.role,
+  });
+
+  return membership;
 };
 
 const getMyInvitesService = async (email: string) => {

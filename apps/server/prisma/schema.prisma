@@ -245,6 +245,8 @@ model ActionItem {
   workspaceId String
   assigneeId  String
 
+  position Int @default(0)
+
   goal        Goal?     @relation(fields: [goalId], references: [id], onDelete: Cascade)
   workspace   Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
   assignee    User      @relation(fields: [assigneeId], references: [id])

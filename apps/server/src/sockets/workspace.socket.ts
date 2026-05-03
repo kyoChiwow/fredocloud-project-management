@@ -1,7 +1,8 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 import { Server, Socket } from "socket.io";
 
-const onlineUsers = new Map<string, string>(); // socketId -> userId
+const onlineUsers = new Map<string, string>();
+const workspaceUsers = new Map<string, Set<string>>();
 
 export const registerWorkspaceSocket = (io: Server, socket: Socket) => {
   // ✅ USER CONNECTED (join personal room)
@@ -16,20 +17,26 @@ export const registerWorkspaceSocket = (io: Server, socket: Socket) => {
   socket.on("join-workspace", ({ workspaceId, userId }) => {
     socket.join(`workspace:${workspaceId}`);
 
-    console.log("JOIN WORKSPACE:", workspaceId, userId);
+  if (!workspaceUsers.has(workspaceId)) {
+    workspaceUsers.set(workspaceId, new Set());
+  }
 
-    onlineUsers.set(socket.id, userId);
+  workspaceUsers.get(workspaceId)!.add(userId);
 
-    const users = Array.from(onlineUsers.values());
-
-    io.to(`workspace:${workspaceId}`).emit("online-users", users);
+  io.to(`workspace:${workspaceId}`).emit(
+    "online-users",
+    Array.from(workspaceUsers.get(workspaceId)!)
+  );
   });
 
   // ❌ DISCONNECT
   socket.on("disconnect", () => {
-    const userId = onlineUsers.get(socket.id);
-    onlineUsers.delete(socket.id);
+  const userId = onlineUsers.get(socket.id);
 
-    console.log(`User disconnected: ${userId}`);
+  onlineUsers.delete(socket.id);
+
+  workspaceUsers.forEach((set) => {
+    set.delete(userId!);
   });
+});
 };

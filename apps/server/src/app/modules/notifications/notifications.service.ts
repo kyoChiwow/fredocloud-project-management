@@ -9,10 +9,11 @@ const createNotificationService = async (data: ICreateNotification) => {
       userId: data.userId,
       workspaceId: data.workspaceId,
       message: data.message,
+      type: data.type ?? null,
+      meta: data.meta ?? null,
     },
   });
 
-  // 🔥 Real-time push to user
   getIO().to(`user:${data.userId}`).emit("notification", notification);
 
   return notification;

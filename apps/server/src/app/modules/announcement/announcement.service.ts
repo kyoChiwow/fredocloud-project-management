@@ -124,7 +124,7 @@ const addCommentService = async (
   if (!announcement) throw new Error("Announcement not found");
 
   // 🔥 Extract mentions (@username)
-  const mentions = data.content.match(/@(\w+)/g);
+  const mentions = data.content.match(/@[\w.-]+/g);
 
   if (mentions && mentions.length > 0) {
     const usernames = mentions.map((m) => m.replace("@", ""));
@@ -133,6 +133,7 @@ const addCommentService = async (
       where: {
         name: {
           in: usernames,
+          mode: "insensitive",
         },
       },
     });

@@ -3,7 +3,7 @@ export interface ICreateNotification {
   workspaceId: string;
   message: string;
   type?: string;
-  meta?: Record<string, any>;
+  meta?: any;
 }
 
 export interface IMarkAsRead {

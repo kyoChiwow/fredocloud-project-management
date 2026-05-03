@@ -56,22 +56,28 @@ const getGoalChartService = async (workspaceId: string) => {
 
 // 📄 CSV Export
 const exportWorkspaceCSVService = async (workspaceId: string) => {
-  const goals = await prisma.goal.findMany({
-    where: { workspaceId },
-    include: {
-      owner: true,
-    },
-  });
+  const [goals, actions] = await Promise.all([
+    prisma.goal.findMany({ where: { workspaceId } }),
+    prisma.actionItem.findMany({ where: { workspaceId } }),
+  ]);
 
-  const formatted = goals.map((g) => ({
-    title: g.title,
-    status: g.status,
-    dueDate: g.dueDate,
-    owner: g.owner.name,
-  }));
+  const data = [
+    ...goals.map((g) => ({
+      type: "GOAL",
+      title: g.title,
+      status: g.status,
+      dueDate: g.dueDate,
+    })),
+    ...actions.map((a) => ({
+      type: "ACTION",
+      title: a.title,
+      status: a.status,
+      priority: a.priority,
+      dueDate: a.dueDate,
+    })),
+  ];
 
-  const parser = new Parser();
-  return parser.parse(formatted);
+  return new Parser().parse(data);
 };
 
 export const AnalyticsService = {
