@@ -4,7 +4,7 @@
   "type": "module",
   "main": "index.js",
   "scripts": {
-    "start": "node ./dist/src/server.js",
+    "start": "tsx src/server.ts",
     "dev": "bun --watch src/server.ts",
     "build": "prisma generate && tsc",
     "lint": "npx eslint ./src",
@@ -50,6 +50,7 @@
     "pg": "^8.20.0",
     "socket.io": "^4.8.3",
     "socket.io-client": "^4.8.3",
+    "tsx": "^4.21.0",
     "zod": "^4.4.1"
   }
 }
